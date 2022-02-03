@@ -1,4 +1,3 @@
-from inspect import _Object
 import zlib
 import numpy as np
 import pandas as pd
@@ -30,16 +29,17 @@ class IsolationForestModel:
 
     def _data_prep(self):
         try:
-            self.data_subset = df[[column1,column2]]
-            if Key is None:
+            self.data_subset = df[[str(column1),str(column2)]]
+            st.write(self.data_subset.head(10))
+            if Key == None:
                 for col in self.data_subset.columns:
-                    if data_subset[col].dtype == object:
+                    if self.data_subset[col].dtype == object:
                         self.data_subset[col] = self.data_subset[col].astype('category')
                         self.data_subset[col] = self.data_subset[col].apply(lambda x: zlib.crc32(x.encode('utf-8')))
             else:
                 self.data_subset = self.data_subset[self.data_subset[column1] == self.key]
                 for col in self.data_subset.columns:
-                    if data_subset[col].dtype == object:
+                    if self.data_subset[col].dtype == object:
                         self.data_subset[col] = self.data_subset[col].astype('category')
                         self.data_subset[col] = self.data_subset[col].apply(lambda x: zlib.crc32(x.encode('utf-8')))
         except Exception as e:
@@ -83,13 +83,14 @@ except:
         with st.spinner('Loading data..'):
             df = load_csv()
 
-st.write(df.head(10))
 st.write("Select column that contains the variable name")
 column1=st.selectbox('Variable Name',df.columns)
 st.write("Select column which may contain anomalous values")
 column2=st.selectbox('Variable Value',df.columns)
 
-Key = st.selectbox('Key',df[str(column1)].unique())
+Keys = df[str(column1)]
+Keys[0]=None
+Key = st.selectbox('Key',Keys.unique())
 Sensitivity = st.select_slider('Sensitivity',list(np.arange(0,1.0,0.01)))
 class_copy = IsolationForestModel(Key, 10, 2, 15000, 'auto',Sensitivity)
 rows = class_copy.run_model()

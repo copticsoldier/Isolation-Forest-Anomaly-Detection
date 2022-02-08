@@ -30,7 +30,6 @@ class IsolationForestModel:
     def _data_prep(self):
         try:
             self.data_subset = df[[str(column1),str(column2)]]
-            st.write(self.data_subset.head(10))
             if Key == None:
                 for col in self.data_subset.columns:
                     if self.data_subset[col].dtype == object:
@@ -66,14 +65,17 @@ class IsolationForestModel:
         return IsolationForestModel._anomaly_rows(self)
 
 
+df=pd.DataFrame()
 st.write("Isolation Forest Model to Detect Anomalies in Data Points:\nSelect dataset to run anomalies model")
 input = st.file_uploader('Drag and drop csv file here')
 
 if input is None:
     st.write("Or use sample dataset to try the application")
     sample = st.checkbox("Upload Adobe Data")
-    input = 'C://Users//T460//Downloads//adobe-data.csv' 
-    df = load_csv()
+    if sample:
+        input = 'C://Users//T460//Downloads//adobe-data.csv' 
+        df = load_csv()
+        st.write(df.head(10))
 
 try:
     if sample:
@@ -82,6 +84,7 @@ except:
     if input:
         with st.spinner('Loading data..'):
             df = load_csv()
+            st.write(df.head(10))
 
 st.write("Select column that contains the variable name")
 column1=st.selectbox('Variable Name',df.columns)

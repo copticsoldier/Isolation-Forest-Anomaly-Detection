@@ -11,6 +11,7 @@ def load_csv():
     df_input=pd.read_csv(input)
     return df_input
 
+#First iteration of the app to make it applicable to a more datasets
 class IsolationForestModel:
     """
     This class runs the isolation forest algorithm on
@@ -28,14 +29,18 @@ class IsolationForestModel:
 
     def _data_prep(self):
         try:
-            self.data_subset = df[['variable_name', 'variable_value']]
-            # At the moment, this app will only cater to the adobe-data.csv dataset due to the defined
-            # column titles above
-            self.data_subset = self.data_subset[self.data_subset['variable_name'] == self.key]
-            for col in self.data_subset.columns:
-                self.data_subset[col] = self.data_subset[col].astype('category')
-                self.data_subset[col] = self.data_subset[col].apply(
-                    lambda x: zlib.crc32(x.encode('utf-8')))
+            self.data_subset = df[[str(column1),str(column2)]]
+            if Key == None:
+                for col in self.data_subset.columns:
+                    if self.data_subset[col].dtype == object:
+                        self.data_subset[col] = self.data_subset[col].astype('category')
+                        self.data_subset[col] = self.data_subset[col].apply(lambda x: zlib.crc32(x.encode('utf-8')))
+            else:
+                self.data_subset = self.data_subset[self.data_subset[column1] == self.key]
+                for col in self.data_subset.columns:
+                    if self.data_subset[col].dtype == object:
+                        self.data_subset[col] = self.data_subset[col].astype('category')
+                        self.data_subset[col] = self.data_subset[col].apply(lambda x: zlib.crc32(x.encode('utf-8')))
         except Exception as e:
             logging.error(traceback.print_tb(e.__traceback__))
 
@@ -60,15 +65,18 @@ class IsolationForestModel:
         return IsolationForestModel._anomaly_rows(self)
 
 
-st.write("Here's our first attempt at creating a streamlit app:\nSelect Dataset to run anomalies model")
-
+df=pd.DataFrame()
+st.write("Isolation Forest Model to Detect Anomalies in Data Points:\nSelect dataset to run anomalies model")
 input = st.file_uploader('Drag and drop csv file here')
 
 if input is None:
     st.write("Or use sample dataset to try the application")
     sample = st.checkbox("Upload Adobe Data")
-    input = 'C://Users//T460//Downloads//adobe-data.csv' 
-    df = load_csv()
+    if sample:
+        input = 'C://Users//T460//Downloads//adobe-data.csv' 
+        df = load_csv()
+        st.write(df.head(10))
+
 try:
     if sample:
         st.markdown("""[download_link]()""")
@@ -76,11 +84,16 @@ except:
     if input:
         with st.spinner('Loading data..'):
             df = load_csv()
-            st.write("Columns:")
-            st.write(list(df.columns))
-            columns = list(df.columns)
+            st.write(df.head(10))
 
-Key = st.selectbox('Key',df['variable_name'].unique())
+st.write("Select column that contains the variable name")
+column1=st.selectbox('Variable Name',df.columns)
+st.write("Select column which may contain anomalous values")
+column2=st.selectbox('Variable Value',df.columns)
+
+Keys = df[str(column1)]
+Keys[0]=None
+Key = st.selectbox('Key',Keys.unique())
 Sensitivity = st.select_slider('Sensitivity',list(np.arange(0,1.0,0.01)))
 class_copy = IsolationForestModel(Key, 10, 2, 15000, 'auto',Sensitivity)
 rows = class_copy.run_model()

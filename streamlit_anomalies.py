@@ -41,6 +41,7 @@ class IsolationForestModel:
                     if self.data_subset[col].dtype == object:
                         self.data_subset[col] = self.data_subset[col].astype('category')
                         self.data_subset[col] = self.data_subset[col].apply(lambda x: zlib.crc32(x.encode('utf-8')))
+                        
         except Exception as e:
             logging.error(traceback.print_tb(e.__traceback__))
 
@@ -91,9 +92,8 @@ column1=st.selectbox('Variable Name',df.columns)
 st.write("Select column which may contain anomalous values")
 column2=st.selectbox('Variable Value',df.columns)
 
-Keys = df[str(column1)]
-Keys[0]=None
-Key = st.selectbox('Key',Keys.unique())
+Keys = df[column1].unique()
+Key = st.selectbox('Key',np.append(Keys,None)
 Sensitivity = st.select_slider('Sensitivity',list(np.arange(0,1.0,0.01)))
 class_copy = IsolationForestModel(Key, 10, 2, 15000, 'auto',Sensitivity)
 rows = class_copy.run_model()

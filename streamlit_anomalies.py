@@ -93,7 +93,7 @@ st.write("Select column which may contain anomalous values")
 column2=st.selectbox('Variable Value',df.columns)
 
 Keys = df[column1].unique()
-Key = st.selectbox('Key',np.append(Keys,None)
+Key = st.selectbox('Key',np.append(Keys,None))
 Sensitivity = st.select_slider('Sensitivity',list(np.arange(0,1.0,0.01)))
 class_copy = IsolationForestModel(Key, 10, 2, 15000, 'auto',Sensitivity)
 rows = class_copy.run_model()

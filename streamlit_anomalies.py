@@ -6,6 +6,8 @@ import logging
 import json
 import streamlit as st
 import traceback
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 def load_csv():
     df_input=pd.read_csv(input)
@@ -51,19 +53,25 @@ class IsolationForestModel:
                 max_samples=self.max_samples, contamination=self.contamination)
             iso.fit(self.data_subset)
             anom_scores = iso.score_samples(self.data_subset)
-            self.data_subset['anomaly'] = -1 * anom_scores
-            self.indices = self.data_subset.index[self.data_subset['anomaly']>= self.sensitivity]
+            self.data_subset['Anomaly Scores'] = -1 * anom_scores
+            self.indices = self.data_subset.index[self.data_subset['Anomaly Scores']>= self.sensitivity]
         except Exception as e:
             logging.error(traceback.print_tb(e.__traceback__))
 
     def _anomaly_rows(self):
         self.anomaly_events = df.loc[self.indices]
         return st.write(self.anomaly_events)
+        
+    def _anom_scores_plot(self):
+        fig, ax =plt.subplots(figsize=(20,12))
+        ax.set_title('Distribution of Isolation Forest Scores', fontsize = 15, loc='center')
+        ax = sns.distplot(self.data_subset['Anomaly Scores'],color='red',hist_kws = {"alpha": 0.5})
+        return st.pyplot(fig)
 
     def run_model(self):
         IsolationForestModel._data_prep(self)
         IsolationForestModel._model_fit_predict(self)
-        return IsolationForestModel._anomaly_rows(self)
+        return IsolationForestModel._anomaly_rows(self), IsolationForestModel._anom_scores_plot(self)
 
 
 df=pd.DataFrame()
@@ -96,9 +104,4 @@ Keys = df[column1].unique()
 Key = st.selectbox('Key',np.append(Keys,None))
 Sensitivity = st.select_slider('Sensitivity',list(np.arange(0,1.0,0.01)))
 class_copy = IsolationForestModel(Key, 10, 2, 15000, 'auto',Sensitivity)
-rows = class_copy.run_model()
-st.write(rows)
-
-
-
-
+st.write(class_copy.run_model())

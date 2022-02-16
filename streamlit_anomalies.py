@@ -8,8 +8,15 @@ import streamlit as st
 import traceback
 import matplotlib.pyplot as plt
 import seaborn as sns
+from streamlit import caching
 
+st.set_page_config(page_title="Anomaly App",initial_sidebar_state="collapsed")
+@st.cache(persist=False,
+          allow_output_mutation=True,
+          suppress_st_warning=True,
+          show_spinner= True)
 def load_csv():
+    df_input=pd.DataFrame()
     df_input=pd.read_csv(input)
     return df_input
 
@@ -52,9 +59,9 @@ class IsolationForestModel:
             iso = IsolationForest(n_estimators=self.n_estimators,verbose=self.verbose,
                 max_samples=self.max_samples, contamination=self.contamination)
             iso.fit(self.data_subset)
-            anom_scores = iso.score_samples(self.data_subset)
-            self.data_subset['Anomaly Scores'] = -1 * anom_scores
-            self.indices = self.data_subset.index[self.data_subset['Anomaly Scores']>= self.sensitivity]
+            anom_scores = -1*iso.score_samples(self.data_subset)
+            self.data_subset['Anomaly Scores'] = 1-anom_scores
+            self.indices = self.data_subset.index[self.data_subset['Anomaly Scores']<= self.sensitivity]
         except Exception as e:
             logging.error(traceback.print_tb(e.__traceback__))
 
@@ -74,34 +81,44 @@ class IsolationForestModel:
         return IsolationForestModel._anomaly_rows(self), IsolationForestModel._anom_scores_plot(self)
 
 
-df=pd.DataFrame()
+st.title("Anomaly Detection Application")
 st.write("Isolation Forest Model to Detect Anomalies in Data Points:\nSelect dataset to run anomalies model")
+df =  pd.DataFrame()
+st.subheader("1. Load the data")   
 input = st.file_uploader('Drag and drop csv file here')
 
-if input is None:
-    st.write("Or use sample dataset to try the application")
-    sample = st.checkbox("Upload Adobe Data")
-    if sample:
-        input = 'C://Users//T460//Downloads//adobe-data.csv' 
-        df = load_csv()
-        st.write(df.head(10))
-
 try:
-    if sample:
-        st.markdown("""[download_link]()""")
-except:
-    if input:
-        with st.spinner('Loading data..'):
+
+    if input is None:
+        st.write("Or use sample dataset to try the application")
+        sample = st.checkbox("Upload Adobe Data")
+        if sample:
+            input = 'C://Users//T460//Downloads//adobe-data.csv' 
             df = load_csv()
             st.write(df.head(10))
 
-st.write("Select column that contains the variable name")
-column1=st.selectbox('Variable Name',df.columns)
-st.write("Select column which may contain anomalous values")
-column2=st.selectbox('Variable Value',df.columns)
+    try:
+        if sample:
+            st.markdown("""[download_link]()""")
+    except:
+        if input:
+            with st.spinner('Loading data..'):
+                df = load_csv()
+                st.write(df.head(10))
 
-Keys = df[column1].unique()
-Key = st.selectbox('Key',np.append(Keys,None))
-Sensitivity = st.select_slider('Sensitivity',list(np.arange(0,1.0,0.01)))
-class_copy = IsolationForestModel(Key, 10, 2, 15000, 'auto',Sensitivity)
-st.write(class_copy.run_model())
+    st.subheader("2. Choose the 2 columns that the model will use to check for anomalies")
+    st.write("Select column that contains the variable name")
+    column1=st.selectbox('Variable Name',df.columns)
+    Keys = df[column1].unique()
+    st.write("Select a value in the column which you;d like to subset by, otherwise press None")
+    Key = st.selectbox('Key',np.append(Keys,None))
+    st.write("Select column which may contain anomalous values")
+    column2=st.selectbox('Variable Value',df.columns)
+    st.subheader("Alter the sensitivity")
+    st.write("Increasing the sensitivity will return more anomalous rows")
+    Sensitivity = st.select_slider('Sensitivity',list(np.arange(0,1.0,0.01)))
+    class_copy = IsolationForestModel(Key, 20, 2, 15000, 'auto',Sensitivity)
+    st.write(class_copy.run_model())
+
+except:
+    None

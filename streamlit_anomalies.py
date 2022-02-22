@@ -8,19 +8,11 @@ import streamlit as st
 import traceback
 import matplotlib.pyplot as plt
 import seaborn as sns
-from streamlit import caching
 
-st.set_page_config(page_title="Anomaly App",initial_sidebar_state="collapsed")
-@st.cache(persist=False,
-          allow_output_mutation=True,
-          suppress_st_warning=True,
-          show_spinner= True)
 def load_csv():
     df_input=pd.DataFrame()
     df_input=pd.read_csv(input)
     return df_input
-
-#First iteration of the app to make it applicable to a more datasets
 class IsolationForestModel:
     """
     This class runs the isolation forest algorithm on

@@ -59,8 +59,9 @@ class IsolationForestModel:
             iso = IsolationForest(n_estimators=self.n_estimators,verbose=self.verbose,
                 max_samples=self.max_samples, contamination=self.contamination)
             iso.fit(self.data_subset)
-            anom_scores = -1*iso.score_samples(self.data_subset)
-            self.data_subset['Anomaly Scores'] = 1-anom_scores
+            self.decision_scores = iso.decision_function(self.data_subset)
+            self.anom_scores = -1*iso.score_samples(self.data_subset)
+            self.data_subset['Anomaly Scores'] = 1-self.anom_scores
             self.indices = self.data_subset.index[self.data_subset['Anomaly Scores']<= self.sensitivity]
         except Exception as e:
             logging.error(traceback.print_tb(e.__traceback__))
@@ -72,7 +73,7 @@ class IsolationForestModel:
     def _anom_scores_plot(self):
         fig, ax =plt.subplots(figsize=(20,12))
         ax.set_title('Distribution of Isolation Forest Scores', fontsize = 15, loc='center')
-        ax = sns.distplot(self.data_subset['Anomaly Scores'],color='red',hist_kws = {"alpha": 0.5})
+        ax = sns.distplot(self.decision_scores,kde_kws={"color": "blue", "lw": 2},hist_kws = {"alpha": 0.5,"color":"red"})
         return st.pyplot(fig)
 
     def run_model(self):

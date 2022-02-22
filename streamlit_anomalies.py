@@ -92,9 +92,9 @@ try:
 
     if input is None:
         st.write("Or use sample dataset to try the application")
-        sample = st.checkbox("Upload Adobe Data")
+        sample = st.checkbox("Download Phone Numbers Sample Data")
         if sample:
-            input = 'C://Users//T460//Downloads//adobe-data.csv' 
+            input = 'C://Users//T460//Documents//Phone_numbers_sample.csv' 
             df = load_csv()
             st.write(df.head(10))
 
@@ -115,7 +115,7 @@ try:
     Key = st.selectbox('Key',np.append(Keys,None))
     st.write("Select column which may contain anomalous values")
     column2=st.selectbox('Variable Value',df.columns)
-    st.subheader("Alter the sensitivity")
+    st.subheader("3. Alter the sensitivity")
     st.write("Increasing the sensitivity will return more anomalous rows")
     Sensitivity = st.select_slider('Sensitivity',list(np.arange(0,1.0,0.01)))
     class_copy = IsolationForestModel(Key, 20, 2, 15000, 'auto',Sensitivity)

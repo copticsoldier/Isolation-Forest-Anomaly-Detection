@@ -1,3 +1,5 @@
+#This branch is for bringing in BiqQuery pulling capability to the streamlit anomalies app
+
 import zlib
 import numpy as np
 import pandas as pd
@@ -8,6 +10,8 @@ import streamlit as st
 import traceback
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas_gbq
+from google.oauth2 import service_account
 
 def load_csv():
     df_input=pd.DataFrame()
@@ -16,7 +20,7 @@ def load_csv():
 class IsolationForestModel:
     """
     This class runs the isolation forest algorithm on
-    the specified variable name in the adobe dataset
+    the specified variable name in the uploaded dataset
     """
 
     def __init__(self, key, n_estimators, verbose, max_samples, contamination, sensitivity):
@@ -85,11 +89,18 @@ try:
     if input is None:
         st.write("Or use sample dataset to try the application")
         sample = st.checkbox("Download Phone Numbers Sample Data")
+        bigquery = st.checkbox("Pull table from Google BigQuery")
         if sample:
             input = 'C://Users//T460//Documents//Phone_numbers_sample.csv' 
             df = load_csv()
             st.write(df.head(10))
-
+        if bigquery:
+            filename = st.text_input('Enter path to Google service account Key:')
+            sql = st.text_input('Create Query:')
+            credentials = service_account.Credentials.from_service_account_file(filename)
+            input = pandas_gbq.read_gbq(sql, credentials=credentials)
+            df = input
+            st.write(df.head(10))
     try:
         if sample:
             st.markdown("""[download_link]()""")

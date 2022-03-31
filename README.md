@@ -1,2 +1,2 @@
 # Isolation-Forest-Anomaly-Detection
-This application allows to check for anomalous rows in a CSV using the isolation forest algorithm in the scikit-learn python package.
+This application allows the user to discover anomalous rows in a CSV using the isolation forest anomaly detection algorithm in the scikit-learn python package.

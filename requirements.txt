@@ -10,4 +10,3 @@ google_cloud_bigquery_storage == 2.12.0
 google_cloud_secret_manager == 1.0.0
 pydata_google_auth == 1.3.0
 google_auth_oauthlib == 0.4.6
-zlib == 1.2.11

@@ -83,7 +83,7 @@ class IsolationForestModel:
 
 
 st.title("Anomaly Detection Application")
-st.write("Isolation Forest Model to Detect Anomalies in Data Points:\nSelect dataset to run anomalies model")
+st.write("Isolation forest model that detects anomalous rows in a dataset")
 df =  pd.DataFrame()
 st.subheader("1. Load the data")   
 input = st.file_uploader('Drag and drop csv file here')
@@ -95,9 +95,7 @@ try:
         sample = st.checkbox("Download Phone Numbers Sample Data")
         bigquery = st.checkbox("Pull table from Google BigQuery")
         if sample:
-            input = 'C:/Users/T460/Documents/Phone_numbers_sample.csv' 
-            df = load_csv()
-            st.write(df.head(10))
+            st.markdown("""[Download Link](https://storage.googleapis.com/public-content-r6ns2jk5u99zr6mv7v4h-j4sp6x6tymwet9bfey0o/Phone_numbers_sample.csv)""")
         if bigquery:
             filename = st.text_input('Enter path to Google service account Key:')
             sql = st.text_input('Create Query:')
@@ -105,14 +103,11 @@ try:
             input = pandas_gbq.read_gbq(sql, credentials=credentials)
             df = input
             st.write(df.head(10))
-    try:
-        if sample:
-            st.markdown("""[download_link](https://storage.googleapis.com/public-content-r6ns2jk5u99zr6mv7v4h-j4sp6x6tymwet9bfey0o/Phone_numbers_sample.csv)""")
-    except:
-        if input:
-            with st.spinner('Loading data..'):
-                df = load_csv()
-                st.write(df.head(10))
+
+    if input:
+        with st.spinner('Loading data..'):
+            df = load_csv()
+            st.write(df.head(10))
 
     st.subheader("2. Choose the 2 columns that the model will use to check for anomalies")
     st.write("Select column that contains the variable name")
